@@ -36,9 +36,6 @@ export default class TopNavbar extends React.Component {
           <Collapse isOpen={this.state.isOpen} navbar>
             <Nav className="ml-auto" navbar>
               <NavItem>
-                <NavLink to="/about" className="nav-link" activeClassName="">About</NavLink>
-              </NavItem>
-              <NavItem>
                 <NavLink to="/post" className="nav-link" activeClassName="">Create a Post</NavLink>
               </NavItem>
             </Nav>

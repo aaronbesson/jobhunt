@@ -6,8 +6,9 @@ import {
   isLoaded,
   isEmpty
 } from 'react-redux-firebase';
-
+import { Redirect } from 'react-router-dom';
 import ReactQuill from 'react-quill';
+import {sanitizeHtml} from 'sanitize-html-react';
 import 'react-quill/dist/quill.snow.css';
 
 import { Button, Form, FormGroup, Label, Input, FormText, Row, Col } from 'reactstrap';
@@ -32,12 +33,14 @@ class Post extends React.Component {
     super(props);
     this.state = {
       user: null,
+      redirectToJobs: false,
       ...defaultFormState
     }
 
     this.handleChange = this.handleChange.bind(this);
     this.handleQuillChange = this.handleQuillChange.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
+    this.clearForm = this.clearForm.bind(this);
     this.postJob = this.postJob.bind(this);
     this.login = this.login.bind(this);
     this.logout = this.logout.bind(this);
@@ -79,6 +82,8 @@ class Post extends React.Component {
       location,
       timestamp: -Date.now()
     });
+    this.clearForm();
+    this.setState({ redirectToJobs: true })
   }
 
   logout() {
@@ -145,6 +150,14 @@ class Post extends React.Component {
   }
 
   renderPost() {
+    const { redirectToJobs } = this.state
+
+    if (redirectToJobs) {
+      return (
+        <Redirect to={'/'}/>
+      );
+    }
+
     return (
       <Col>
         <Row className="mb-5">
@@ -199,19 +212,11 @@ class Post extends React.Component {
                 <Button>Submit</Button>
               </FormGroup>
             </Form>
-
-
           </Col>
         </Row>
       </Col>
     );
   }
-
-            //<CheckoutV
-              //name={'Job Post'}
-              //description={'Normal Job Post'}
-              //amount={10}
-            ///>
 
   render() {
     const { user } = this.state;

@@ -91,7 +91,7 @@ class JobList extends React.Component {
                       <Col>{item.value.range}</Col>
                     </Row>
                     {/*<Col><Button><a href={item.value.apply}>Apply</a></Button></Col>*/}
-                    <Modal labelledBy={item.key} isOpen={this.state[item.key]} toggle={this.toggle.bind(this, item.key)} className={this.props.className}>
+                    <Modal labelledBy={item.key} isOpen={this.state[item.key]} toggle={this.toggle.bind(this, item.key)} className={this.props.className} size="lg">
                       <ModalHeader toggle={this.toggle.bind(this, item.key)}>{item.value.title}</ModalHeader>
                       <ModalBody>
                         <div dangerouslySetInnerHTML={this.createMarkup(item.value.description)} />
