@@ -10,7 +10,15 @@ import {
 import {
   Row,
   Col,
-  Button
+  Button,
+  Modal,
+  ModalHeader,
+  ModalBody,
+  ModalFooter,
+  ListGroup,
+  ListGroupItem,
+  Badge,
+  Media
 } from 'reactstrap';
 import { RingLoader } from 'react-spinners';
 
@@ -24,12 +32,37 @@ import {
 class JobList extends React.Component {
   constructor(props) {
     super(props);
+    this.state = {
+      modal: false
+    };
+    this.toggle = this.toggle.bind(this);
+    this.onModalOpen = this.onModalOpen.bind(this)
   }
 
   componentDidMount() {
     const { dispatch } = this.props;
     //dispatch(fetchJobs());
   }
+
+  onModalOpen(evt) {
+    debugger;
+    this.toggle(evt.currentTarget.id);
+  }
+
+  toggle(modalName) {
+    let value = true;
+    if (this.state.hasOwnProperty(modalName)) {
+     value = !this.state[modalName];
+    }
+
+    this.setState({
+      [modalName]: value
+    });
+  }
+
+  createMarkup(content) {
+    return {__html: content};
+  };
 
   render() {
     //const sampleTodo = { timestamp: -Date.now(), title: 'Job ' + Date.now(), remote: (Date.now() % 2 == 0), location: 'new york, NY', contact: 'jim@fakejob.com' }
@@ -41,13 +74,36 @@ class JobList extends React.Component {
         this.props.jobs.map(
           (item) => {
             return (
-              <Row id={item.key} key={item.key}>
-                <Col>{item.value.title}</Col>
-                <Col>Remote: {item.value.remote ? 'true':'false'}</Col>
-                <Col>{item.value.location}</Col>
-                <Col>{item.value.range}</Col>
-                <Col><Button><a href={item.value.apply}>Apply</a></Button></Col>
-              </Row>
+              <ListGroupItem key={item.key}>
+                <Row id={item.key} onClick={this.toggle.bind(this, item.key)}>
+                  <Col md='1'>
+                    <Media left>
+                      <Media object src="http://lorempixel.com/64/64/city/" alt="Generic placeholder image" />
+                    </Media>
+                  </Col>
+                  <Col>
+                    <Row>
+                      <Col>{item.value.title}</Col>
+                    </Row>
+                    <Row>
+                      <Col>{item.value.remote ? (<Badge color="secondary">Remote</Badge>) : null}</Col>
+                      <Col>{item.value.location}</Col>
+                      <Col>{item.value.range}</Col>
+                    </Row>
+                    {/*<Col><Button><a href={item.value.apply}>Apply</a></Button></Col>*/}
+                    <Modal labelledBy={item.key} isOpen={this.state[item.key]} toggle={this.toggle.bind(this, item.key)} className={this.props.className}>
+                      <ModalHeader toggle={this.toggle.bind(this, item.key)}>{item.value.title}</ModalHeader>
+                      <ModalBody>
+                        <div dangerouslySetInnerHTML={this.createMarkup(item.value.description)} />
+                      </ModalBody>
+                      <ModalFooter>
+                        <a href={item.value.apply} target='_blank'><Button color="primary" >Apply</Button></a>{' '}
+                        <Button color="secondary" onClick={this.toggle.bind(this, item.key)}>Close</Button>
+                      </ModalFooter>
+                    </Modal>
+                  </Col>
+                </Row>
+              </ListGroupItem>
             )
           }
         );
@@ -55,12 +111,14 @@ class JobList extends React.Component {
       <OneCol>
         <Row>
           <Col>
-            <p>Job List</p>
+            <h3>Job Posts</h3>
           </Col>
         </Row>
         <Row>
           <Col>
+            <ListGroup>
             {jobs}
+            </ListGroup>
           </Col>
         </Row>
       </OneCol>
