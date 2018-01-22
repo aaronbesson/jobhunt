@@ -1,8 +1,14 @@
 import { combineReducers } from 'redux';
 
+import { firebaseReducer } from 'react-redux-firebase';
+
+import userReducer from './userReducer';
+import jobsReducer from './jobsReducer';
+
 const rootReducer = combineReducers({
-  fooStore: (state = {}, action) => state,
-  barStore: (state = {}, action) => state
+  firebase: firebaseReducer,
+  jobsStore: jobsReducer,
+  userStore: userReducer
 });
 
 export default rootReducer;

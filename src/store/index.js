@@ -1,12 +1,34 @@
 import thunkMiddleware from 'redux-thunk';
-import { createStore, applyMiddleware } from 'redux';
+import { createStore, applyMiddleware, compose, combineReducers } from 'redux';
+import { reactReduxFirebase, firebaseReducer } from 'react-redux-firebase';
+
+import firebase, {fbConfig} from '../firebase';
 import rootReducer from '../reducers';
 
-const store = createStore(
-  rootReducer,
-  applyMiddleware(
-    thunkMiddleware, // lets us dispatch() functions
-  )
-);
+export default function configureStore (initialState, history) {
+  const createStoreWithMiddleware = compose(
+    reactReduxFirebase(firebase,
+      {
+        userProfile: 'users',
+        enableLogging: false
+      }
+    ),
+    applyMiddleware(
+      thunkMiddleware, // lets us dispatch() functions
+    ),
+    typeof window === 'object' && typeof window.devToolsExtension !== 'undefined' ? window.devToolsExtension() : f => f
+  )(createStore)
 
-export default store;
+  const store = createStoreWithMiddleware(rootReducer)
+
+  if (module.hot) {
+    // Enable Webpack hot module replacement for reducers
+    module.hot.accept('../reducers', () => {
+      const nextRootReducer = require('../reducers');
+      store.replaceReducer(nextRootReducer)
+    })
+  }
+
+  return store
+}
+//export default store;
