@@ -13,7 +13,7 @@ import 'react-quill/dist/quill.snow.css';
 
 import { Button, Form, FormGroup, Label, Input, FormText, Row, Col } from 'reactstrap';
 
-import firebase, { auth, provider } from '../../../firebase.js';
+import firebase, { auth, provider, storageRef } from '../../../firebase.js';
 import OneCol from '../../templates/OneCol';
 import { Checkout } from '../../organisms';
 import { UserAuth } from '../../molecules';
@@ -25,6 +25,7 @@ const defaultFormState = {
   range: null,
   remote: null,
   title: null,
+  logo: null
 };
 
 class Post extends React.Component {
@@ -40,6 +41,7 @@ class Post extends React.Component {
     this.handleChange = this.handleChange.bind(this);
     this.handleQuillChange = this.handleQuillChange.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
+    this.handleFileUpload = this.handleFileUpload.bind(this);
     this.clearForm = this.clearForm.bind(this);
     this.postJob = this.postJob.bind(this);
     this.login = this.login.bind(this);
@@ -62,6 +64,12 @@ class Post extends React.Component {
     this.setState({[e.target.name]: e.target.value});
   }
 
+  handleFileUpload(e) {
+    this.setState({
+      [e.target.name]: e.target.files[0]
+    });
+  }
+
   handleSubmit(evt) {
     evt.preventDefault();
     this.postJob();
@@ -72,18 +80,25 @@ class Post extends React.Component {
   }
 
   postJob() {
-    const { description, title, remote, range, location, apply } = this.state;
-    firebase.push('jobs', {
-      apply,
-      description,
-      title,
-      remote: remote === 'on' ? true : false,
-      range,
-      location,
-      timestamp: -Date.now()
+    const { description, title, remote, range, location, apply, logo } = this.state;
+    const { user } = this.props;
+    const _this = this;
+
+    storageRef.child(`logos/${user.uid}/${Date.now()}_${logo.name}`).put(logo).then(function(snapshot) {
+      firebase.push('jobs', {
+        apply,
+        description,
+        title,
+        remote: remote === 'on' ? true : false,
+        range,
+        location,
+        timestamp: -Date.now(),
+        logoUrl: snapshot.downloadURL,
+        createdBy: user.uid
+      });
+      _this.clearForm();
+      _this.setState({ redirectToJobs: true });
     });
-    this.clearForm();
-    this.setState({ redirectToJobs: true })
   }
 
   logout() {
@@ -114,8 +129,7 @@ class Post extends React.Component {
             <p>In order to post a job on this board you will need to</p>
             <ol>
               <li>Login with a google account</li>
-              <li>Add a payment type</li>
-              <li>Fillout the post info and submit the payment</li>
+              <li>Fillout the post info and submit</li>
             </ol>
           </Col>
           <Col>
@@ -173,6 +187,13 @@ class Post extends React.Component {
                 <Input type="text" name="title" id="job-title" onChange={this.handleChange} placeholder="My great Job Title" />
                 <FormText color="muted">
                   Something that is a catchy but descriptive
+                </FormText>
+              </FormGroup>
+              <FormGroup>
+                <Label for="logo">Company Logo</Label>
+                <Input type="file" name="logo" id="logo" onChange={this.handleFileUpload} />
+                <FormText color="muted">
+                  64x64 please
                 </FormText>
               </FormGroup>
               <FormGroup>

@@ -78,7 +78,7 @@ class JobList extends React.Component {
                 <Row id={item.key} onClick={this.toggle.bind(this, item.key)}>
                   <Col md='1'>
                     <Media left>
-                      <Media object src="http://lorempixel.com/64/64/city/" alt="Generic placeholder image" />
+                      <Media style={{width: 64, height: 64}} object src={item.value.logoUrl} alt="Generic placeholder image" />
                     </Media>
                   </Col>
                   <Col>
