@@ -1,4 +1,5 @@
 import React from 'react';
+import moment from 'moment';
 import { compose } from 'redux';
 import { connect } from 'react-redux';
 import {
@@ -35,18 +36,8 @@ class JobList extends React.Component {
     this.state = {
       modal: false
     };
+
     this.toggle = this.toggle.bind(this);
-    this.onModalOpen = this.onModalOpen.bind(this)
-  }
-
-  componentDidMount() {
-    const { dispatch } = this.props;
-    //dispatch(fetchJobs());
-  }
-
-  onModalOpen(evt) {
-    debugger;
-    this.toggle(evt.currentTarget.id);
   }
 
   toggle(modalName) {
@@ -64,9 +55,18 @@ class JobList extends React.Component {
     return {__html: content};
   };
 
+  renderMediaLogo(url) {
+    if (url) {
+      return (
+        <Media left>
+          <Media style={{width: 64, height: 64}} object src={url} alt="Generic placeholder image" />
+        </Media>
+      )
+    }
+    return null;
+  }
+
   render() {
-    //const sampleTodo = { timestamp: -Date.now(), title: 'Job ' + Date.now(), remote: (Date.now() % 2 == 0), location: 'new york, NY', contact: 'jim@fakejob.com' }
-    //const pushSample = () => firebase.push('jobs', sampleTodo)
     const jobs = !isLoaded(this.props.jobs) ?
       <RingLoader loading color="#36D7B7" /> :
       isEmpty(this.props.jobs) ?
@@ -77,20 +77,19 @@ class JobList extends React.Component {
               <ListGroupItem key={item.key}>
                 <Row id={item.key} onClick={this.toggle.bind(this, item.key)}>
                   <Col md='1'>
-                    <Media left>
-                      <Media style={{width: 64, height: 64}} object src={item.value.logoUrl} alt="Generic placeholder image" />
-                    </Media>
+                    {this.renderMediaLogo(item.value.logoUrl)}
                   </Col>
                   <Col>
                     <Row>
                       <Col>{item.value.title}</Col>
+                      <Col md="2">Posted: {moment(item.value.timestamp * -1).format("MMM Do, YYYY")}</Col>
                     </Row>
                     <Row>
                       <Col>{item.value.remote ? (<Badge color="secondary">Remote</Badge>) : null}</Col>
                       <Col>{item.value.location}</Col>
                       <Col>{item.value.range}</Col>
                     </Row>
-                    {/*<Col><Button><a href={item.value.apply}>Apply</a></Button></Col>*/}
+
                     <Modal labelledBy={item.key} isOpen={this.state[item.key]} toggle={this.toggle.bind(this, item.key)} className={this.props.className} size="lg">
                       <ModalHeader toggle={this.toggle.bind(this, item.key)}>{item.value.title}</ModalHeader>
                       <ModalBody>
@@ -101,6 +100,7 @@ class JobList extends React.Component {
                         <Button color="secondary" onClick={this.toggle.bind(this, item.key)}>Close</Button>
                       </ModalFooter>
                     </Modal>
+
                   </Col>
                 </Row>
               </ListGroupItem>
@@ -137,6 +137,6 @@ const mstp = ({ firebase }) => {
 }
 
 export default compose(
-  firebaseConnect(props => [{ path: 'jobs', queryParams: [ 'limitToFirst=10', 'orderByChild=timestamp' ] }]),
+  firebaseConnect(props => [{ path: 'jobs', queryParams: [ `endAt=${moment().subtract(30, 'days')}`, 'orderByChild=timestamp' ] }]),
   connect(mstp)
 )(JobList);
